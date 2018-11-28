@@ -1,70 +1,55 @@
 package com.comunication.fasto.config;
 
+import com.comunication.fasto.security.JWTAuthenticationFilter;
+import com.comunication.fasto.security.JWTAuthorizationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-public class AuthentificationConfig extends WebSecurityConfigurerAdapter {
-    private UserDetailsService userDetailsService;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder(){
-        return new BCryptPasswordEncoder();
+public class AuthentificationConfig<Autowired> extends WebSecurityConfigurerAdapter {
+    @Qualifier
+     private UserDetailsService userDetailsService;
+     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    public AuthentificationConfig() {
     }
 
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.
-                authorizeRequests()
-                .antMatchers("/static/**", "/registration","users/**","/login").permitAll()
-                .antMatchers("/admin/**").access("hasRole('ROLE_ADMIN')")
-                .anyRequest().authenticated()
-                .and().csrf().disable()
-                .formLogin().defaultSuccessUrl("/")
-                .loginPage("/login")
-                .permitAll().usernameParameter("login")
-                .passwordParameter("password")
-                .and()
-                .logout()
-                .permitAll();
-
-    }
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web
-                .ignoring()
-                .antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**");
-
-    }
-    /*
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        /*BCryptPasswordEncoder encoder = passwordEncoder();
+        auth.inMemoryAuthentication()
+                .withUser("admin").password(encoder.encode("1234")).roles("ADMIN","USER");*/
 
+        /*auth.userDetailsService(userDetailsService)
+                .passwordEncoder(bCryptPasswordEncoder);*/
+    }
+    @Override
+    protected void configure(HttpSecurity security) throws Exception
+    {
+        security.httpBasic().disable();
+        security.csrf().disable();//annuler l'utilisation de csrf (csrf: c,est un password qui utilise spring pour s'authentifier )
+        //security.formLogin();
+        security.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);//deactiver l'implementation du token dans la ssesion
+        security.authorizeRequests().antMatchers(HttpMethod.POST,"/**").permitAll();//(permter que au  Role ADMIN accese a /user avec post)
+        security.authorizeRequests().antMatchers(HttpMethod.POST,"/login/**").permitAll();
 
-        auth.inMemoryAuthentication().withUser("admin").password("admin").roles("USER","ADMIN");
-        auth.inMemoryAuthentication().withUser("user").password("user").roles("USER");*/
-
-
- /*auth.jdbcAuthentication().dataSource(dataSource).usersByUsernameQuery("select login , pass , active login, active  ");
-
-    }*/
-
-
-    // This method is configuring Spring Security to use our custom implementation
-    // of the UserDetailsService with Bcrypt.
-
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+        security.addFilter(new JWTAuthenticationFilter(authenticationManager()));
+        security.addFilterBefore(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+        //security.authorizeRequests().anyRequest().authenticated();
     }
 
-}
 
+}
