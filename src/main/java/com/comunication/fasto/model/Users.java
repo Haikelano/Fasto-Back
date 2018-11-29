@@ -2,20 +2,22 @@ package com.comunication.fasto.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.GeneratedValue;
 
 @Document(collection = "Usersevent")
-public class Collections {
-    @Id @GeneratedValue
+public class Users {
+    @Id
+    @GeneratedValue
     public String id;
 
     public String username;
     public String password;
 
-    public Collections() {
+    public Users() {
     }
 
-    public Collections(String id, String username, String password) {
+    public Users(String id, String username, String password) {
         this.id = id;
         this.username = username;
         this.password = password;
