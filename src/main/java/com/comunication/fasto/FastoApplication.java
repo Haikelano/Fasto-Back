@@ -26,8 +26,4 @@ public class FastoApplication {
 					.antMatchers("/login").permitAll();
 		}
 	}*/
-	@Bean
-	public BCryptPasswordEncoder getpasswordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 }
