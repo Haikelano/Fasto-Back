@@ -27,6 +27,4 @@ public class hotelController {
         Hotel _hotel = repository.save(new Hotel(hotel.getId(), hotel.getName(), hotel.getNombre()));
         return _hotel;
     }
-
-
 }

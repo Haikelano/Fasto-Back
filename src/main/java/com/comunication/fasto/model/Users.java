@@ -8,13 +8,13 @@ import javax.persistence.GeneratedValue;
 @Document(collection = "Usersevent")
 public class Users {
     @Id
-    @GeneratedValue
     public String id;
 
     public String username;
     public String password;
 
     public Users() {
+        super();
     }
 
     public Users(String id, String username, String password) {
